@@ -28,7 +28,8 @@ class Auth extends Component {
                 required: true,
                 errorMessage: 'Введите логин',
                 valid: false,
-                touched: false
+                touched: false,
+                type: 'text'
             },
             password: {
                 value: '',
@@ -37,7 +38,8 @@ class Auth extends Component {
                 required: true,
                 errorMessage: 'Введите пароль',
                 valid: false,
-                touched: false
+                touched: false,
+                type: 'password'
             }
         },
         error: false
@@ -99,12 +101,12 @@ class Auth extends Component {
         const {form, error} = this.state;
 
         const renderFields = Object.keys(form).map((key, index) => {
-            const {placeholder, value, required, valid, touched, errorMessage} = form[key];
+            const {placeholder, value, type, required, valid, touched, errorMessage} = form[key];
             return (
-
                 <Input
                     key={index}
                     placeholder={placeholder}
+                    type={type}
                     value={value}
                     required={required}
                     valid={valid}

@@ -8,6 +8,7 @@ export default class Input extends Component {
     static propTypes = {
         valid: PropTypes.bool,
         required: PropTypes.bool,
+        type: PropTypes.string,
         placeholder: PropTypes.string,
         value: PropTypes.string.isRequired,
         errorMessage: PropTypes.string,
@@ -15,14 +16,15 @@ export default class Input extends Component {
     };
 
     render() {
-        const {placeholder, label, value, required, valid, touched, errorMessage, onChange} = this.props;
+        const {placeholder,type, label, value, required, valid, touched, errorMessage, onChange} = this.props;
 
         const renderError = (required && !valid && touched) ? <div style={{color:'red'}}>{errorMessage}</div> : null;
 
+        const inputType = type?type:'text';
         return (
             <div className="form-group">
                 {label ? <label><b>{label}</b></label> : null}
-                <input type="text" className={'form-control'} placeholder={placeholder} value={value}
+                <input type={inputType} className={'form-control'} placeholder={placeholder} value={value}
                        onChange={onChange}/>
                 {renderError}
             </div>
