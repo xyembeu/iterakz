@@ -58,21 +58,21 @@ class OrderList extends Component {
         const paginateData = data.slice(indexOfFirst, indexOfLast);
 
         const timestampToDate = (timestamp) => {
-            var date = new Date();
+            let date = new Date();
             date.setTime(timestamp * 1000);
             return date.getHours() + ':' + date.getMinutes() + ' ' + ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth() + 1)).slice(-2) + '.' + date.getFullYear();
         };
 
-        const statusIds = {
-            0: 'Отменен',
-            10: 'Новый',
-            20: 'Принят',
-            30: 'Подготавливается',
-            50: 'Доставляется',
-            55: 'Доставлен',
-            60: 'Доступен',
-            100: 'Выполнен'
-        };
+        const statusIds = [
+            {id: 0, name: 'Отменен'},
+            {id: 10, name: 'Новый'},
+            {id: 20, name: 'Принят'},
+            {id: 30, name: 'Подготавливается'},
+            {id: 50, name: 'Доставляется'},
+            {id: 55, name: 'Доставлен'},
+            {id: 60, name: 'Доступен'},
+            {id: 100, name: 'Выполнен'}
+        ];
 
         const getCityName = (id) => {
             let name = ''
