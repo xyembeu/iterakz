@@ -55,7 +55,7 @@ class OrderDetail extends Component {
         const {cities} = this.props;
 
         const timestampToDate = (timestamp) => {
-            var date = new Date();
+            let date = new Date();
             date.setTime(timestamp * 1000);
             return date.getHours() + ':' + date.getMinutes() + ' ' + ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth() + 1)).slice(-2) + '.' + date.getFullYear();
         };
