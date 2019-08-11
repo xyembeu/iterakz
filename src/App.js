@@ -15,6 +15,7 @@ class App extends Component {
             return (
                 <Layout>
                     {<Route path='/' exact component={Orders}/>}
+                    <Route render={() => <Redirect to="/"/>}/>
                 </Layout>
             );
         };
