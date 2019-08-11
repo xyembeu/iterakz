@@ -22,7 +22,8 @@ export default class Pagination extends Component {
 
         const renderPageNumbers = pageNumbers.map(number => {
             return (
-                <button key={number} className="btn btn-white" onClick={() => onPaginate(number)}>{number}</button>
+                <button key={number} className={`btn btn-white ${number === current ? 'active' : ''}`}
+                        onClick={() => onPaginate(number)}>{number}</button>
             );
         });
 

@@ -1,31 +1,50 @@
-import React, {Component} from 'react'
+import React, {Component} from 'react';
+import {Route, Switch, Redirect, withRouter} from 'react-router-dom';
 
-import {Provider} from "react-redux";
-import {createStore} from 'redux'
-import combineReducers from './store/reducers'
+import Layout from './containers/Layout/Layout';
+import Orders from './containers/Orders/Orders';
+import Login from './containers/Login/Login';
 
-import Router from './router'
-import axios from "axios";
+import {connect} from 'react-redux';
+import 'pace-js'
 
-const store = createStore(combineReducers);
-
-if (localStorage.getItem('secretKey')) {
-    axios.defaults.headers.common['X-Auth-Token'] = localStorage.getItem('secretKey');
-
-    store.dispatch({
-        type: 'AUTH',
-        payload: localStorage.getItem('secretKey')
-    })
-}
-
-export default class App extends Component {
+class App extends Component {
 
     render() {
+        const publicRoutes = () => {
+            return (
+                <Layout>
+                    {<Route path='/' exact component={Orders}/>}
+                </Layout>
+            );
+        };
+
+        const privateRoutes = () => {
+            return (
+                <>
+                    <Route path="/" component={Login}/>
+                    <Route render={() => <Redirect to="/login"/>}/>
+                </>
+            );
+        };
+
+        const renderRoutes =
+            this.props.secretKey !== '' || localStorage.getItem('secretKey')
+                ? publicRoutes()
+                : privateRoutes();
+
         return (
-            <Provider store={store}>
-                <Router/>
-            </Provider>
+            <Switch>
+                {renderRoutes}
+            </Switch>
         );
     }
 }
 
+const mapStateToProps = ({auth: {secretKey}}) => {
+    return {
+        secretKey
+    };
+};
+
+export default withRouter(connect(mapStateToProps)(App));

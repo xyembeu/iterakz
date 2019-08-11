@@ -1,25 +1,50 @@
-export const ORDERS = 'ORDERS';
-export const ORDERS_CURRENT_PAGE = 'ORDERS_CURRENT_PAGE';
-export const ORDERS_FOR_FILTER = 'ORDERS_FOR_FILTER';
-export const ORDERS_FILTER_CHANGE = 'ORDERS_FILTER_CHANGE';
+import axios from 'axios';
+import queryString from 'query-string';
+import pickBy from 'lodash.pickby';
+import identity from 'lodash.identity';
 
-export const setOrders = (data) => ({
-    type: ORDERS,
-    payload: data
-});
+import { customHistory } from '../../history';
 
-export const setOrdersForFilter = (dataForFilter) => ({
-    type: ORDERS_FOR_FILTER,
-    payload: dataForFilter
-});
+export const ORDERS_REQUEST = 'ORDERS_REQUEST';
+export const ORDERS_SUCCESS = 'ORDERS_SUCCESS';
+export const ORDERS_ERROR = 'ORDERS_ERROR';
 
-export const setOrdersCurrentPage = (currentPage) => ({
-    type: ORDERS_CURRENT_PAGE,
-    payload: currentPage
-});
+export const getOrders = () => {
+  return (dispatch) => {
+    axios
+      .get(`http://task01.softlab.kz/data/control/orders/a/active/list/`)
+      .then(({ data }) => {
 
-export const setOrdersFilter = (form) => ({
-    type: ORDERS_FILTER_CHANGE,
-    payload: form
-});
+        dispatch({ type: ORDERS_SUCCESS, payload: data });
+      });
+  };
+};
 
+export const setFilter = filtersRrr => {
+  return () => {
+      const filters = {...filtersRrr}
+
+    delete filters.page;
+    delete filters.modalId;
+
+    const cleanedFilters = pickBy(filters, identity);
+    const queryParams = queryString.stringify(cleanedFilters);
+
+    if (!Object.keys(cleanedFilters).length) {
+      customHistory.push(`/`);
+      return;
+    }
+
+    customHistory.push(`/?${queryParams}&page=1`);
+  };
+};
+
+export const setPagination = number => {
+  return () => {
+    const queryParams = queryString.parse(customHistory.location.search);
+
+    let nextQueryParams = { ...queryParams, page: number };
+
+    customHistory.push(`/?${queryString.stringify(nextQueryParams)}`);
+  };
+};

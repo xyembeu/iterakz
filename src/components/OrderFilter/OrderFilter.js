@@ -1,146 +1,168 @@
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import {withRouter} from 'react-router-dom';
+import isEqual from 'lodash.isequal';
 
-import {connect} from "react-redux";
-import {setOrders, setOrdersFilter, setOrdersCurrentPage} from "../../store/orders/actions";
-
+import {STATUS_IDS} from '../../helpers';
 
 import Input from '../UI/Input/Input';
-import Select from "../UI/Select/Select";
+import Select from '../UI/Select/Select';
+import isEmpty from "lodash.isempty";
+
+
+const initialState = {
+    number: '',
+    _statusId: '',
+    customerPhone: '',
+    _cityId: '',
+    deliveryGeneralData: '',
+};
+
+const prepareFilters = filters => ({
+    number: filters.number || '',
+    _statusId: filters._statusId || '',
+    customerPhone: filters.customerPhone || '',
+    _cityId: filters._cityId || '',
+    deliveryGeneralData: filters.deliveryGeneralData || '',
+});
 
 class OrderFilter extends Component {
-
     constructor(props) {
         super(props);
 
         this.state = {
-            disabled: true
-        }
-
+            ...prepareFilters(props.filtersFromRoute),
+            isTouched: false,
+        };
     }
 
-    onFilterChange = (e, field) => {
-        const form = {...this.props.form};
-
-        form[field] = e.target.value;
-
-        if (form[field].trim() !== '') {
-            this.setState({
-                disabled: false
-            });
-        }
-
-        this.props.setOrdersFilter(form);
+     static propTypes = {
+        cities: PropTypes.array.isRequired,
+        setFilter: PropTypes.func.isRequired,
+        filtersFromRoute: PropTypes.object,
     };
 
-    filterData = (data) => {
-        const {form} = this.props;
 
-        let filter = data.filter((item) => {
-            for (let key in form) {
-                if (form.hasOwnProperty(key) && form[key].trim() !== '' && !item[key].toString().includes(form[key]))
-                    return false;
-            }
-            return true;
-        });
+    componentDidUpdate(prevProps, prevState) {
+        const {isTouched} = this.state;
+        const {filtersFromRoute} = this.props;
 
-
-        if (filter.length === data.length) {
-            this.setState({
-                disabled: true
-            });
+        if (!isTouched && !isEqual(prevProps.filtersFromRoute, filtersFromRoute)) {
+            this.setState(prev => ({
+                ...prepareFilters(filtersFromRoute),
+                isTouched: false,
+            }));
         }
+    }
 
-        this.props.setOrders(filter)
-        this.props.setOrdersCurrentPage(1)
-
-    };
-
-    onReset = () => {
-        const form = {...this.props.form}
-        for (let key in form) {
-            if (form.hasOwnProperty(key)) {
-                form[key] = '';
-            }
-        }
-
-        this.props.setOrdersFilter(form);
-        this.props.setOrders(this.props.dataForFilter)
-    };
-
-    onSubmit = (e) => {
+    onSubmitForm = e => {
         e.preventDefault();
-        this.filterData(this.props.dataForFilter)
+        this.setState(
+            prev => ({
+                ...prev,
+                isTouched: false,
+            }),
+            () => this.props.setFilter(this.state)
+        );
+    };
+
+    onChangeForm = e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.onSubmitForm(e);
+        }
+    };
+
+    resetFilter = () => {
+        this.setState(initialState);
+        this.props.setFilter(initialState);
+    };
+
+    changeFilter = e => {
+        const target = e.currentTarget;
+        const fieldName = target.dataset.name;
+        const value = target.value;
+
+        this.setState({
+            [fieldName]: value,
+            isTouched: true,
+        });
     };
 
     render() {
-
-        const {form: {id, statusId, customerPhone, cityId, deliveryGeneralData}, cities} = this.props;
-
-        const statusIds = [
-            {id: 0, name: 'Отменен'},
-            {id: 10, name: 'Новый'},
-            {id: 20, name: 'Принят'},
-            {id: 30, name: 'Подготавливается'},
-            {id: 50, name: 'Доставляется'},
-            {id: 55, name: 'Доставлен'},
-            {id: 60, name: 'Доступен'},
-            {id: 100, name: 'Выполнен'}
-        ];
+        const {cities} = this.props;
+        const {number, _statusId, customerPhone, _cityId, deliveryGeneralData, isTouched} = this.state;
 
         return (
-            <form onSubmit={this.onSubmit}>
+            <form onSubmit={this.onSubmitForm} onKeyDown={this.onChangeForm} onChange={this.onChangeForm}>
                 <div className="row">
                     <div className="col-4">
-                        <Input placeholder={'id заказа'} value={id} label={'id заказа'}
-                               onChange={(event) => this.onFilterChange(event, 'id')}/>
+                        <Input
+                            name={'number'}
+                            placeholder={'номер заказа'}
+                            value={number}
+                            label={'номер заказа'}
+                            onChange={this.changeFilter}
+                        />
                     </div>
                     <div className="col-4">
-                        <Select value={statusId} options={statusIds} placeholder={'Статус заказа'}
-                                label={'Статус заказа'}
-                                onChange={(e) => this.onFilterChange(e, 'statusId')}/>
+                        <Select
+                            name={'_statusId'}
+                            value={_statusId}
+                            options={STATUS_IDS}
+                            placeholder={'Статус заказа'}
+                            label={'Статус заказа'}
+                            onChange={this.changeFilter}
+                        />
                     </div>
                     <div className="col-4">
-                        <Input placeholder={'Номер телефона'} value={customerPhone} label={'Номер телефона'}
-                               onChange={(event) => this.onFilterChange(event, 'customerPhone')}/>
+                        <Input
+                            name={'customerPhone'}
+                            placeholder={'Номер телефона'}
+                            value={customerPhone}
+                            label={'Номер телефона'}
+                            onChange={this.changeFilter}
+                        />
                     </div>
                     <div className="col-4">
-                        <Select value={cityId} options={cities} placeholder={'Город'} label={'Город'}
-                                onChange={(e) => this.onFilterChange(e, 'cityId')}/>
+                        <Select
+                            name={'_cityId'}
+                            value={_cityId}
+                            options={cities}
+                            placeholder={'Город'}
+                            label={'Город'}
+                            onChange={this.changeFilter}
+                        />
                     </div>
                     <div className="col-4">
-                        <Input placeholder={'Адрес'} value={deliveryGeneralData} label={'Адрес'}
-                               onChange={(event) => this.onFilterChange(event, 'deliveryGeneralData')}/>
+                        <Input
+                            name={'deliveryGeneralData'}
+                            placeholder={'Адрес'}
+                            value={deliveryGeneralData}
+                            label={'Адрес'}
+                            onChange={this.changeFilter}
+                        />
                     </div>
                 </div>
                 <div className="text-center">
                     <button
-                        disabled={`${this.state.disabled ? 'disabled' : ''}`}
-                        className={'btn btn-w-m btn-default mx-xl-3'} onClick={() => this.onReset()}>
+                        disabled={!isTouched || !isEmpty(this.props.filtersFromRoute)?'':'disabled'}
+                        className={'btn btn-w-m btn-default mx-xl-3'}
+                        onClick={this.resetFilter}
+                        type={'button'}
+                    >
                         Сбросить
                     </button>
                     <button
-                        disabled={`${this.state.disabled ? 'disabled' : ''}`}
+                        type={'submit'}
+                        disabled={isTouched?'':'disabled'}
                         className={'btn btn-w-m btn-primary'}>
                         Применить
                     </button>
                 </div>
             </form>
-        )
+        );
     }
 }
 
-const dispatchStateToProps = {
-    setOrders,
-    setOrdersCurrentPage,
-    setOrdersFilter,
-};
-
-const mapStateToProps = ({orders: {dataForFilter, form}, config: {cities}}) => {
-    return {
-        dataForFilter,
-        form,
-        cities
-    }
-};
-
-export default connect(mapStateToProps, dispatchStateToProps)(OrderFilter);
+export default withRouter(OrderFilter);

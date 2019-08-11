@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 
-import Logout from "../../components/Logout/Logout";
+import Logout from "../Logout/Logout";
 
 export default class Header extends Component {
 
@@ -10,7 +10,7 @@ export default class Header extends Component {
             <div className="row border-bottom">
                 <nav className="navbar navbar-static-top white-bg" role="navigation">
                     <div className="navbar-header">
-                        <a className="navbar-minimalize minimalize-styl-2 btn btn-primary " href="javascript:;"
+                        <a href="#/" className="navbar-minimalize minimalize-styl-2 btn btn-primary "
                            onClick={() => onToggleClass()}>
                             <i className="fa fa-bars"></i>
                         </a>

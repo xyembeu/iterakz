@@ -1,45 +1,35 @@
-import {ORDERS} from './actions';
-import {ORDERS_FOR_FILTER} from './actions';
-import {ORDERS_CURRENT_PAGE} from './actions';
-import {ORDERS_FILTER_CHANGE} from './actions';
+import { ORDERS_SUCCESS, ORDERS_REQUEST, ORDERS_ERROR } from './actions';
 
 const defaultState = {
-    data: [],
-    dataForFilter: [],
-    currentPage: 1,
-    form: {
-        id: '',
-        statusId: '',
-        customerPhone: '',
-        cityId: '',
-        deliveryGeneralData: '',
-        tsCreated: ''
-    }
+  data: [],
+  isLoadig: false,
+  error: '',
 };
 
 export const ordersReducer = (state = defaultState, action) => {
-    switch (action.type) {
-        case ORDERS:
-            return {
-                ...state,
-                data: action.payload
-            };
-        case ORDERS_FOR_FILTER:
-            return {
-                ...state,
-                dataForFilter: action.payload
-            };
-        case ORDERS_CURRENT_PAGE:
-            return {
-                ...state,
-                currentPage: action.payload
-            };
-        case ORDERS_FILTER_CHANGE:
-            return {
-                ...state,
-                form: action.payload
-            };
-        default:
-            return state;
-    }
+  switch (action.type) {
+    case ORDERS_REQUEST:
+      return {
+        ...state,
+        isLoadig: true,
+        error: '',
+      };
+
+    case ORDERS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        data: action.payload,
+      };
+
+    case ORDERS_ERROR:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload,
+      };
+
+    default:
+      return state;
+  }
 };

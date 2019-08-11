@@ -3,7 +3,7 @@ import React, {Component} from 'react'
 import {connect} from "react-redux";
 
 import {withRouter, NavLink} from "react-router-dom";
-import Logout from "../../components/Logout/Logout";
+import Logout from "../Logout/Logout";
 
 
 class Sidebar extends Component {
@@ -32,7 +32,7 @@ class Sidebar extends Component {
                     <ul className="nav metismenu" id="side-menu">
                         <li className="nav-header">
                             <div className="dropdown profile-element">
-                                <a data-toggle="dropdown" className="dropdown-toggle" href="javascript:;">
+                                <a href="#/" data-toggle="dropdown" className="dropdown-toggle">
                                     <span className="block m-t-xs font-bold">{firstName}</span>
                                     <span className="text-muted text-xs block" onClick={()=>this.onToggleMenu()}>{positionTitle}<b className="caret"></b></span>
                                 </a>

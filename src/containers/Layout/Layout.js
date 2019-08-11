@@ -1,16 +1,15 @@
 import React, {Component} from 'react';
 
-import {connect} from "react-redux";
-import {setProfile} from "../../store/auth/actions";
-import {setCities} from "../../store/config/actions";
-
-import axios from "axios";
-
 import Sidebar from "../Sidebar/Sidebar";
 import Content from "../Content/Content";
 import Header from "../Header/Header";
 import Yield from "../Yield/Yield";
 import Footer from "../Footer/Footer";
+
+import {connect} from "react-redux";
+
+import {getProfile} from "../../store/auth/actions";
+import {getCities} from "../../store/config/actions";
 
 
 class Layout extends Component {
@@ -19,18 +18,9 @@ class Layout extends Component {
     };
 
     componentDidMount() {
-
-        axios.get(`http://task01.softlab.kz/data/control/employee/profile`)
-            .then(({data}) => {
-                this.props.setProfile(data);
-            });
-
-        axios.get(`http://task01.softlab.kz/config`)
-            .then(({data: {cities}}) => {
-                this.props.setCities(cities);
-            });
+        this.props.getCities();
+        this.props.getProfile();
     }
-
 
     onToggleClass = () =>{
         this.setState(({toggleClass})=>{
@@ -50,7 +40,7 @@ class Layout extends Component {
                     <Yield>
                         {this.props.children}
                     </Yield>
-                    <Footer/>>
+                    <Footer/>
                 </Content>
             </div>
         )
@@ -58,9 +48,8 @@ class Layout extends Component {
 }
 
 const dispatchStateToProps = {
-    setCities,
-    setProfile
+    getProfile,
+    getCities
 };
 
-
-export default connect(null, dispatchStateToProps)(Layout);
+export default connect(null,dispatchStateToProps)(Layout);

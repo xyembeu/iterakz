@@ -1,4 +1,4 @@
-import {CITIES} from './actions';
+import {CITIES_SUCCESS} from './actions';
 
 const defaultState = {
     cities: []
@@ -6,7 +6,7 @@ const defaultState = {
 
 export const configReducer = (state = defaultState, action) => {
     switch (action.type) {
-        case CITIES:
+        case CITIES_SUCCESS:
             return {
                 ...state,
                 cities: action.payload

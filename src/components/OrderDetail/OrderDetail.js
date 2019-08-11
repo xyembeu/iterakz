@@ -1,49 +1,17 @@
 import React, {Component} from 'react';
-import axios from 'axios';
-import Select from "../UI/Select/Select";
+import PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
 
-import {connect} from "react-redux";
+import { STATUS_IDS, timestampToDate } from '../../helpers';
+
+import Select from "../UI/Select/Select";
 
 class OrderDetail extends Component {
 
-    state = {
-        statusId: '',
-        cityId: '',
-        customerPhone: '',
-        customerName: '',
-        tsCreated: '',
-        delivery: {
-            street: '',
-            house: '',
-            floor: ''
-        },
-        items: [],
-        loading: true
+    static propTypes = {
+        data: PropTypes.object.isRequired,
+        cities: PropTypes.array.isRequired
     };
-
-    componentDidMount() {
-        const {id} = this.props;
-
-        axios.get(`http://task01.softlab.kz/data/control/orders/a/order/${id}`)
-            .then(({data: {statusId, cityId, customerPhone, customerName, tsCreated, items, delivery: {data: {street, house, floor}}}}) => {
-
-                const delivery = {...this.state.delivery};
-                delivery.street = street;
-                delivery.house = house;
-                delivery.floor = floor;
-
-                this.setState({
-                    statusId,
-                    cityId,
-                    customerPhone,
-                    customerName,
-                    tsCreated,
-                    items,
-                    delivery,
-                    loading:false
-                })
-            });
-    }
 
     onChange = (e, field) => {
         console.log(e)
@@ -51,72 +19,53 @@ class OrderDetail extends Component {
 
 
     render() {
-        const {loading, statusId, cityId, customerName, customerPhone, tsCreated, items, delivery: {street, house, floor}} = this.state;
-        const {cities} = this.props;
-
-        const timestampToDate = (timestamp) => {
-            let date = new Date();
-            date.setTime(timestamp * 1000);
-            return date.getHours() + ':' + date.getMinutes() + ' ' + ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth() + 1)).slice(-2) + '.' + date.getFullYear();
-        };
-
-        const statusIds = [
-            {id:0, name:'Отменен'},
-            {id:10, name:'Новый'},
-            {id:20, name:'Принят'},
-            {id:30, name:'Подготавливается'},
-            {id:50, name:'Доставляется'},
-            {id:55, name:'Доставлен'},
-            {id:60, name:'Доступен'},
-            {id:100, name:'Выполнен'}
-        ];
-
-
-        const renderDetailItems = items.map(({id, title}) => {
+        const {data:{statusId, cityId, customerName, customerPhone, customerComment, tsCreated, items, comments, delivery,sumPrice, toPay, totalPrice}, cities} = this.props;
+        const renderCart = items.map(({id, title, price, quantity, imageUrls}) => {
             return (
-                <li key={id}>{title}</li>
+                <li key={id}><img src={imageUrls[0]} width={'30'} height={'30'} alt={title}/>/ {title} / {+price}тг / {+quantity}шт</li>
             )
         });
 
-        const renderLoading = () =>{
-            return(
-                <b>Loading...</b>
-            )
-        };
-
-        const renderDetail = () => {
+        const renderComments = comments && comments.map(({authorId, message}, index) => {
             return (
-                <div>
-                    <b className="mb-3">Создан {timestampToDate(tsCreated)}</b>
-                    <Select value={statusId} options={statusIds} placeholder={'Статус заказа'} label={'Статус заказа'}
-                            onChange={(e) => this.onChange(e, 'statusId')}/>
-                    <Select value={cityId} options={cities} placeholder={'Город'} label={'Город'}
-                            onChange={(e) => this.onChange(e, 'cityId')}/>
-                    <div className="mb-1"><b>Имя:</b> {customerName}</div>
-                    <div className="mb-1"><b>Телефон:</b> {customerPhone}</div>
-                    <div className="mb-3"><b>Адрес:</b> ул.{street} {house}/{floor}</div>
-                    <b>Список</b>
-                    <ul>
-                        {renderDetailItems}
-                    </ul>
-                </div>
+                <li key={index}>{message}</li>
             )
-        };
-
-        const renderData = !loading ? renderDetail(): renderLoading();
+        });
 
         return (
-          <div>
-              {renderData}
-          </div>
+            <div>
+                <b className="mb-3">Создан {timestampToDate(tsCreated)}</b>
+                <Select value={statusId} options={STATUS_IDS} placeholder={'Статус заказа'} label={'Статус заказа'}
+                        onChange={(e) => this.onChange(e, 'statusId')}/>
+                <Select value={cityId} options={cities} placeholder={'Город'} label={'Город'}
+                        onChange={(e) => this.onChange(e, 'cityId')}/>
+                <div className="mb-1"><b>Имя:</b> {customerName}</div>
+                <div className="mb-1"><b>Телефон:</b> {customerPhone}</div>
+                {customerComment?<div className="mb-3"><b>Комментарий клиента:</b> {customerComment}</div>:null}
+                <hr/>
+                <div className="mb-3"><b>Доставка</b></div>
+                <div className="mb-1"><b>Адрес:</b> ул.{delivery.data.street} {delivery.data.house} {delivery.data.floor}</div>
+                {customerComment?<div className="mb-3"><b>Дата/время:</b> {delivery.data.deliveryDate} {delivery.data.deliveryTime}</div>:null}
+                <hr/>
+                <div className="mb-3"><b>Корзина</b></div>
+                <ul>
+                    {renderCart}
+                </ul>
+                <hr/>
+                <hr/>
+                <div className="mb-3"><b>Комментарии</b></div>
+                <ul>
+                    {comments?renderComments:<li>Нет комментариев</li>}
+                </ul>
+                <hr/>
+                <div className="mb-3"><b>Оплата</b></div>
+                <div className="mb-1"><b>Сумма заказа:</b> {+sumPrice}тг</div>
+                <div className="mb-1"><b>Сумма к оплате:</b> {+toPay}тг</div>
+                <div className="mb-3"><b>Итоговая сумма заказа:</b> {+totalPrice}тг</div>
+                <hr/>
+            </div>
         )
     }
 }
 
-const mapStateToProps = ({config:{cities}}) => {
-    return {
-        cities
-    }
-};
-
-export default connect(mapStateToProps)(OrderDetail);
+export default withRouter(OrderDetail);

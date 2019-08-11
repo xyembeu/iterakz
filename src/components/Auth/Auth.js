@@ -1,10 +1,8 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
 
 import {connect} from 'react-redux';
-import {setAuth} from '../../store/auth/actions'
-
+import {getAuthToken} from '../../store/auth/actions';
 
 import Input from '../UI/Input/Input';
 
@@ -16,7 +14,9 @@ class Auth extends Component {
     }
 
     static propTypes = {
-        setAuth: PropTypes.func.isRequired
+        getAuthToken: PropTypes.func.isRequired,
+        secretKey: PropTypes.string.isRequired,
+        error: PropTypes.string.isRequired,
     };
 
     state = {
@@ -29,7 +29,7 @@ class Auth extends Component {
                 errorMessage: 'Введите логин',
                 valid: false,
                 touched: false,
-                type: 'text'
+                type: 'text',
             },
             password: {
                 value: '',
@@ -39,10 +39,9 @@ class Auth extends Component {
                 errorMessage: 'Введите пароль',
                 valid: false,
                 touched: false,
-                type: 'password'
-            }
+                type: 'password',
+            },
         },
-        error: false
     };
 
     onChange = (event, field) => {
@@ -62,46 +61,36 @@ class Auth extends Component {
 
     fieldValidate = (field, required, value) => {
         if (!required) {
-            return true
+            return true;
         }
         if (required && value.trim() !== '') {
             const index = this.notFilleds.indexOf(field);
             if (index > -1) {
                 this.notFilleds.splice(index, 1);
             }
-            return true
+            return true;
         }
 
         this.notFilleds.push(field);
     };
 
-    onSubmit = (e) => {
+    onSubmit = e => {
         e.preventDefault();
 
-        const {form} = this.state;
-
-        axios.post('http://task01.softlab.kz/data/control/employee/token', {
-            username: form.username.value,
-            password: form.password.value
-        })
-            .then(({data: {secretKey}}) => {
-                axios.defaults.headers.common['X-Auth-Token'] = secretKey;
-                localStorage.setItem('secretKey', secretKey);
-                this.props.setAuth(secretKey);
-            })
-            .catch((error) => {
-                this.setState({
-                    error: true
-                })
-            });
+        const {form:{username, password}} = this.state;
+        this.props.getAuthToken({
+            username: username.value,
+            password: password.value,
+        });
     };
 
-
     render() {
-        const {form, error} = this.state;
+        const {form} = this.state;
+        const {error} = this.props;
 
         const renderFields = Object.keys(form).map((key, index) => {
-            const {placeholder, value, type, required, valid, touched, errorMessage} = form[key];
+            const {
+                placeholder, value, type, required, valid, touched, errorMessage} = form[key];
             return (
                 <Input
                     key={index}
@@ -112,33 +101,46 @@ class Auth extends Component {
                     valid={valid}
                     touched={touched}
                     errorMessage={errorMessage}
-                    onChange={(event) => this.onChange(event, key)}/>
-
-            )
+                    onChange={event => this.onChange(event, key)}
+                />
+            );
         });
 
+
         return (
-            <form onSubmit={this.onSubmit}>
-                {renderFields}
-                <div className="text-center">
-                    <button disabled={this.notFilleds.length > 0 ? 'disabled' : ''}
-                            className={'btn btn-primary block full-width m-b'}>Войти
-                    </button>
-                </div>
-                {error ? <div className={'alert alert-danger'}>Неверный логин или пароль!</div> : null}
-            </form>
-        )
+            <>
+                <form onSubmit={this.onSubmit}>
+                    {renderFields}
+                    <div className="text-center">
+                        <button
+                            disabled={this.notFilleds.length > 0 ? 'disabled' : ''}
+                            className={'btn btn-primary block full-width m-b'}
+                        >
+                            Войти
+                        </button>
+                    </div>
+                    {error ? (
+                        <div className={'alert alert-danger'}>{error}</div>
+                    ) : null}
+                </form>
+            </>
+        );
     }
 }
 
 const dispatchStateToProps = {
-    setAuth
+    getAuthToken
 };
 
-const mapStateToProps = ({secretKey}) => {
+const mapStateToProps = (store) => {
+    const {auth: {secretKey, error}} = store;
     return {
-        secretKey
-    }
+        secretKey,
+        error
+    };
 };
 
-export default connect(mapStateToProps, dispatchStateToProps)(Auth);
+export default connect(
+    mapStateToProps,
+    dispatchStateToProps
+)(Auth);
