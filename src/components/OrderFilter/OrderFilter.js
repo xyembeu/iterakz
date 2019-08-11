@@ -146,7 +146,7 @@ class OrderFilter extends Component {
                 </div>
                 <div className="text-center">
                     <button
-                        disabled={!isTouched || !isEmpty(this.props.filtersFromRoute)?'':'disabled'}
+                        disabled={isTouched || !isEmpty(this.props.filtersFromRoute)?'':'disabled'}
                         className={'btn btn-w-m btn-default mx-xl-3'}
                         onClick={this.resetFilter}
                         type={'button'}
